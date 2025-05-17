@@ -68,7 +68,7 @@ export class World {
     }
 
     generateTerrain() {
-        const size = 48; // Increased world size from 32 to 100
+        const size = 48; // Adjusted world size for mobile
         const height = 8; // Maximum terrain height
         
         // Create a flat base layer
