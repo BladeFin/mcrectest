@@ -185,4 +185,14 @@ export class World {
         // Update player movement
         this.move({ x: moveX, z: moveZ }, false); // Pass false for sprinting
     }
+
+    handleTouchRotation(touchX, touchY) {
+        // Calculate rotation based on touch input
+        const rotationX = (touchX / window.innerWidth) * Math.PI * 2; // Full rotation
+        const rotationY = (touchY / window.innerHeight) * Math.PI; // Limited vertical rotation
+
+        // Update camera rotation
+        this.camera.rotation.y = rotationX;
+        this.camera.rotation.x = rotationY;
+    }
 } 
