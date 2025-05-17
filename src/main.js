@@ -82,7 +82,9 @@ class Game {
         // Add touch event listener for mobile devices
         this.overlay.addEventListener('touchstart', (e) => {
             e.preventDefault(); // Prevent potential double-tap issues
-            this.controls.lock();
+            // Hide the overlay directly and dispatch the lock event
+            this.overlay.style.display = 'none';
+            this.controls.dispatchEvent({ type: 'lock' });
         });
 
         this.controls.addEventListener('lock', () => {
