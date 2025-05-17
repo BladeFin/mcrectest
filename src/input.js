@@ -1,0 +1,239 @@
+import * as THREE from 'three';
+
+export class InputHandler {
+    constructor(player, world) {
+        this.player = player;
+        this.world = world;
+        
+        // Movement state
+        this.keys = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false,
+            jump: false,
+            sprint: false
+        };
+        
+        // Mouse state
+        this.mouseDown = false;
+        this.lastClickTime = 0;
+        
+        // Block highlight
+        this.highlightedBlock = null;
+        this.originalMaterials = new Map(); // Store original materials
+        
+        // Setup event listeners
+        this.setupKeyboardEvents();
+        this.setupMouseEvents();
+
+        // Debug: Log that input handler is initialized
+        console.log('Input handler initialized');
+    }
+
+    setupKeyboardEvents() {
+        document.addEventListener('keydown', (e) => {
+            console.log('Key pressed:', e.code); // Debug log
+            switch(e.code) {
+                case 'KeyW':
+                    this.keys.forward = true;
+                    break;
+                case 'KeyS':
+                    this.keys.backward = true;
+                    break;
+                case 'KeyA':
+                    this.keys.left = true;
+                    break;
+                case 'KeyD':
+                    this.keys.right = true;
+                    break;
+                case 'Space':
+                    console.log('Space pressed - attempting jump'); // Debug log
+                    this.keys.jump = true;
+                    this.player.jump();
+                    break;
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    this.keys.sprint = true;
+                    console.log('Sprint activated'); // Debug log
+                    break;
+                case 'Digit1':
+                case 'Digit2':
+                case 'Digit3':
+                case 'Digit4':
+                case 'Digit5':
+                case 'Digit6':
+                case 'Digit7':
+                case 'Digit8':
+                case 'Digit9':
+                    const slot = parseInt(e.code.replace('Digit', '')) - 1;
+                    this.player.setSelectedSlot(slot);
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            console.log('Key released:', e.code); // Debug log
+            switch(e.code) {
+                case 'KeyW':
+                    this.keys.forward = false;
+                    break;
+                case 'KeyS':
+                    this.keys.backward = false;
+                    break;
+                case 'KeyA':
+                    this.keys.left = false;
+                    break;
+                case 'KeyD':
+                    this.keys.right = false;
+                    break;
+                case 'Space':
+                    console.log('Space released'); // Debug log
+                    this.keys.jump = false;
+                    break;
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    this.keys.sprint = false;
+                    console.log('Sprint deactivated'); // Debug log
+                    break;
+            }
+        });
+    }
+
+    setupMouseEvents() {
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // Left click
+                this.mouseDown = true;
+                this.handleBlockInteraction();
+            } else if (e.button === 2) { // Right click
+                this.handleBlockPlacement();
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === 0) {
+                this.mouseDown = false;
+            }
+        });
+
+        // Prevent context menu on right click
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    }
+
+    handleBlockInteraction() {
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), this.player.camera);
+        
+        const intersects = raycaster.intersectObjects(this.world.blocks.children);
+        if (intersects.length > 0) {
+            const block = intersects[0].object;
+            // Check if block is within reach (5 blocks)
+            const distance = block.position.distanceTo(this.player.position);
+            if (distance <= 5) {
+                // Add block to inventory
+                const blockType = block.userData.type;
+                this.player.addToInventory(blockType);
+                this.world.removeBlock(block);
+            }
+        }
+    }
+
+    handleBlockPlacement() {
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), this.player.camera);
+        
+        const intersects = raycaster.intersectObjects(this.world.blocks.children);
+        if (intersects.length > 0) {
+            const intersection = intersects[0];
+            const normal = intersection.face.normal;
+            const position = intersection.point.add(normal.multiplyScalar(0.5));
+            
+            // Round position to nearest block
+            position.x = Math.round(position.x);
+            position.y = Math.round(position.y);
+            position.z = Math.round(position.z);
+            
+            // Check if block is within reach (5 blocks)
+            const distance = position.distanceTo(this.player.position);
+            if (distance <= 5) {
+                // Create a box for the block that would be placed
+                const blockBox = new THREE.Box3().setFromCenterAndSize(
+                    position,
+                    new THREE.Vector3(1, 1, 1)
+                );
+                
+                // Create player bounding box
+                const playerBox = new THREE.Box3().setFromCenterAndSize(
+                    this.player.position,
+                    new THREE.Vector3(this.player.width, this.player.height, this.player.width)
+                );
+                
+                // Only place block if it doesn't intersect with player
+                if (!blockBox.intersectsBox(playerBox)) {
+                    // Get block type from selected inventory slot
+                    const blockType = this.player.getSelectedBlockType();
+                    if (blockType) {
+                        this.world.addBlock(position, this.world.blockTypes[blockType]);
+                        this.player.removeFromInventory();
+                    }
+                }
+            }
+        }
+    }
+
+    update() {
+        // Calculate movement direction
+        const direction = new THREE.Vector3(
+            (this.keys.right ? 1 : 0) - (this.keys.left ? 1 : 0),
+            0,
+            (this.keys.forward ? 1 : 0) - (this.keys.backward ? 1 : 0)
+        );
+        
+        // Update block highlight
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), this.player.camera);
+        const intersects = raycaster.intersectObjects(this.world.blocks.children);
+        
+        // Restore previous highlighted block
+        if (this.highlightedBlock && this.highlightedBlock !== intersects[0]?.object) {
+            const originalMaterial = this.originalMaterials.get(this.highlightedBlock);
+            if (originalMaterial) {
+                this.highlightedBlock.material = originalMaterial;
+                this.originalMaterials.delete(this.highlightedBlock);
+            }
+            this.highlightedBlock = null;
+        }
+        
+        // Highlight new block
+        if (intersects.length > 0) {
+            const block = intersects[0].object;
+            if (block !== this.highlightedBlock) {
+                // Store original material if not already stored
+                if (!this.originalMaterials.has(block)) {
+                    this.originalMaterials.set(block, block.material);
+                    
+                    // Create highlighted material
+                    const highlightMaterial = block.material.clone();
+                    if (highlightMaterial.map) {
+                        // If the material has a texture, adjust its color
+                        highlightMaterial.color.multiplyScalar(1.5); // Make it 50% brighter
+                    } else {
+                        // If it's a solid color, make it brighter
+                        highlightMaterial.color.multiplyScalar(1.5);
+                    }
+                    block.material = highlightMaterial;
+                }
+                this.highlightedBlock = block;
+            }
+        }
+        
+        // Debug: Log movement state
+        if (direction.length() > 0) {
+            console.log('Moving:', direction, 'Sprint:', this.keys.sprint);
+        }
+        
+        this.player.move(direction, this.keys.sprint);
+    }
+} 
