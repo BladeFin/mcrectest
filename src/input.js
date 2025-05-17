@@ -132,24 +132,39 @@ export class InputHandler {
         let initialTouches = 0; // To count fingers on touchstart
         const tapThresholdTime = 300; // ms
         const tapThresholdDistance = 10; // pixels
+        let touchStartedOnKeypad = false; // Track if the touch started on a keypad button
 
         this.domElement.addEventListener('touchstart', (e) => {
-            initialTouches = e.touches.length;
-            if (e.touches.length === 1) {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-                touchStartTime = performance.now();
+            // Check if the touch started on a keypad button
+            const targetId = e.target.id;
+            if (targetId === 'move-forward' || targetId === 'move-backward' || targetId === 'move-left' || targetId === 'move-right' || targetId === 'jump-button') {
+                touchStartedOnKeypad = true;
+                // Don't prevent default here to allow button's own event handling
             } else {
-                 // Reset if more than one touch starts for drag
-                touchStartX = null;
-                touchStartY = null;
-                touchStartTime = null;
+                touchStartedOnKeypad = false;
+                 // Prevent default only for touches not on keypad, to stop scrolling/zooming on canvas drag
+                e.preventDefault();
+
+                initialTouches = e.touches.length;
+                if (e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchStartTime = performance.now();
+                } else {
+                    // Reset if more than one touch starts for drag
+                    touchStartX = null;
+                    touchStartY = null;
+                    touchStartTime = null;
+                }
             }
         });
 
         this.domElement.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Keep this to prevent scrolling while dragging
-            if (e.touches.length === 1 && touchStartX !== null && touchStartY !== null) {
+            // Only process touchmove for camera if the touch did NOT start on the keypad
+            if (!touchStartedOnKeypad && e.touches.length === 1 && touchStartX !== null && touchStartY !== null) {
+                // Keep this to prevent scrolling while dragging on the canvas
+                 e.preventDefault();
+
                 const touchCurrentX = e.touches[0].clientX;
                 const touchCurrentY = e.touches[0].clientY;
 
@@ -178,35 +193,35 @@ export class InputHandler {
                 if (Math.abs(deltaX) > tapThresholdDistance || Math.abs(deltaY) > tapThresholdDistance) {
                      touchStartTime = null; // Invalidate tap detection
                 }
-            } else {
-                 // Reset drag tracking if the number of touches changes
-                touchStartX = null;
-                touchStartY = null;
             }
         });
 
         this.domElement.addEventListener('touchend', (e) => {
-            // Check for tap gesture only if a touch started and didn't move much
-            if (touchStartTime !== null && performance.now() - touchStartTime < tapThresholdTime) {
-                 // Check if all fingers lifted and how many were initially used
-                if (e.touches.length === 0) {
-                    if (initialTouches === 1) {
-                        // One-finger tap to break block
-                        console.log('One-finger tap detected - attempting to break block'); // Debug
-                        this.handleBlockInteraction();
-                    } else if (initialTouches === 2) {
-                        // Two-finger tap to place block
-                         console.log('Two-finger tap detected - attempting to place block'); // Debug
-                        this.handleBlockPlacement();
+            // Only process touchend for taps if the touch did NOT start on the keypad
+            if (!touchStartedOnKeypad) {
+                // Check for tap gesture only if a touch started and didn't move much
+                if (touchStartTime !== null && performance.now() - touchStartTime < tapThresholdTime) {
+                     // Check if all fingers lifted and how many were initially used
+                    if (e.touches.length === 0) {
+                        if (initialTouches === 1) {
+                            // One-finger tap to break block
+                            console.log('One-finger tap detected on canvas - attempting to break block'); // Debug
+                            this.handleBlockInteraction();
+                        } else if (initialTouches === 2) {
+                            // Two-finger tap to place block
+                             console.log('Two-finger tap detected on canvas - attempting to place block'); // Debug
+                            this.handleBlockPlacement();
+                        }
                     }
                 }
             }
 
-            // Reset touch state
+            // Reset touch state and keypad flag
             touchStartX = null;
             touchStartY = null;
             touchStartTime = null;
             initialTouches = 0;
+            touchStartedOnKeypad = false;
         });
     }
 
