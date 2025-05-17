@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 
 export class InputHandler {
-    constructor(player, world) {
+    constructor(player, world, domElement) {
         this.player = player;
         this.world = world;
+        this.domElement = domElement; // The DOM element to attach listeners to
         
         // Movement state
         this.keys = {
@@ -26,6 +27,7 @@ export class InputHandler {
         // Setup event listeners
         this.setupKeyboardEvents();
         this.setupMouseEvents();
+        this.setupTouchEvents(); // Add touch events
 
         // Debug: Log that input handler is initialized
         console.log('Input handler initialized');
@@ -119,6 +121,52 @@ export class InputHandler {
         // Prevent context menu on right click
         document.addEventListener('contextmenu', (e) => {
             e.preventDefault();
+        });
+    }
+
+    setupTouchEvents() {
+        let touchStartX = null;
+        let touchStartY = null;
+
+        this.domElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        });
+
+        this.domElement.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && touchStartX !== null && touchStartY !== null) {
+                const touchCurrentX = e.touches[0].clientX;
+                const touchCurrentY = e.touches[0].clientY;
+
+                const deltaX = touchCurrentX - touchStartX;
+                const deltaY = touchCurrentY - touchStartY;
+
+                // Apply rotation to player's camera based on delta
+                // We need to scale the touch movement to feel natural for camera rotation
+                const rotationSpeed = 0.002; // Adjust this value for sensitivity
+
+                // Rotate horizontally (yaw)
+                // Use the camera directly for rotation
+                this.player.camera.rotation.y -= deltaX * rotationSpeed;
+
+                // Rotate vertically (pitch), clamping to prevent flipping
+                this.player.camera.rotation.x -= deltaY * rotationSpeed;
+                this.player.camera.rotation.x = Math.max(
+                    -Math.PI / 2,
+                    Math.min(Math.PI / 2,
+                    this.player.camera.rotation.x)
+                );
+
+                touchStartX = touchCurrentX;
+                touchStartY = touchCurrentY;
+            }
+        });
+
+        this.domElement.addEventListener('touchend', (e) => {
+            touchStartX = null;
+            touchStartY = null;
         });
     }
 

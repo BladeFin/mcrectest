@@ -35,7 +35,7 @@ class Game {
         this.player.camera.position.copy(spawnPosition);
         this.player.world = this.world; // Set the world reference
         
-        this.input = new InputHandler(this.player, this.world);
+        this.input = new InputHandler(this.player, this.world, this.renderer.domElement);
 
         // Add FPS counter
         this.fpsCounter = document.createElement('div');
