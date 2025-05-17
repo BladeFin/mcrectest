@@ -79,6 +79,12 @@ class Game {
             this.controls.lock();
         });
 
+        // Add touch event listener for mobile devices
+        this.overlay.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent potential double-tap issues
+            this.controls.lock();
+        });
+
         this.controls.addEventListener('lock', () => {
             this.overlay.style.display = 'none';
         });
