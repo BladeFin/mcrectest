@@ -28,6 +28,7 @@ export class InputHandler {
         this.setupKeyboardEvents();
         this.setupMouseEvents();
         this.setupTouchEvents(); // Add touch events
+        this.setupMobileKeypadEvents(); // Add keypad events
 
         // Debug: Log that input handler is initialized
         console.log('Input handler initialized');
@@ -207,6 +208,36 @@ export class InputHandler {
             touchStartTime = null;
             initialTouches = 0;
         });
+    }
+
+    setupMobileKeypadEvents() {
+        const moveForwardButton = document.getElementById('move-forward');
+        const moveBackwardButton = document.getElementById('move-backward');
+        const moveLeftButton = document.getElementById('move-left');
+        const moveRightButton = document.getElementById('move-right');
+        const jumpButton = document.getElementById('jump-button');
+
+        if (moveForwardButton) {
+            moveForwardButton.addEventListener('touchstart', () => { this.keys.forward = true; });
+            moveForwardButton.addEventListener('touchend', () => { this.keys.forward = false; });
+        }
+        if (moveBackwardButton) {
+            moveBackwardButton.addEventListener('touchstart', () => { this.keys.backward = true; });
+            moveBackwardButton.addEventListener('touchend', () => { this.keys.backward = false; });
+        }
+        if (moveLeftButton) {
+            moveLeftButton.addEventListener('touchstart', () => { this.keys.left = true; });
+            moveLeftButton.addEventListener('touchend', () => { this.keys.left = false; });
+        }
+        if (moveRightButton) {
+            moveRightButton.addEventListener('touchstart', () => { this.keys.right = true; });
+            moveRightButton.addEventListener('touchend', () => { this.keys.right = false; });
+        }
+        if (jumpButton) {
+            jumpButton.addEventListener('touchstart', () => { this.player.jump(); });
+            // For jump, we only need touchstart to trigger the jump
+            // jumpButton.addEventListener('touchend', () => { this.keys.jump = false; }); // Not needed for jump action
+        }
     }
 
     handleBlockInteraction() {
