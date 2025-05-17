@@ -147,6 +147,7 @@ export class InputHandler {
         });
 
         this.domElement.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Keep this to prevent scrolling while dragging
             if (e.touches.length === 1 && touchStartX !== null && touchStartY !== null) {
                 const touchCurrentX = e.touches[0].clientX;
                 const touchCurrentY = e.touches[0].clientY;
