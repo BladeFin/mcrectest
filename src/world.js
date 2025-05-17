@@ -195,4 +195,35 @@ export class World {
         this.camera.rotation.y = rotationX;
         this.camera.rotation.x = rotationY;
     }
-} 
+
+    initStartScreen() {
+        const startScreen = document.createElement('div');
+        startScreen.id = 'startScreen';
+        startScreen.style.position = 'fixed';
+        startScreen.style.top = '0';
+        startScreen.style.left = '0';
+        startScreen.style.width = '100%';
+        startScreen.style.height = '100%';
+        startScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        startScreen.style.display = 'flex';
+        startScreen.style.justifyContent = 'center';
+        startScreen.style.alignItems = 'center';
+        startScreen.style.color = 'white';
+        startScreen.style.fontSize = '24px';
+        startScreen.textContent = 'Tap to Start';
+        document.body.appendChild(startScreen);
+
+        // Add touch event listener to start the game
+        startScreen.addEventListener('touchstart', () => {
+            startScreen.style.display = 'none'; // Hide the start screen
+            console.log('Game started on touch');
+            // You can add any initialization logic here
+        });
+    }
+}
+
+document.addEventListener('touchstart', () => {
+    // Start the game when the user taps the screen
+    console.log('Game started on touch');
+    // You can add any initialization logic here
+}); 
