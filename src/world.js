@@ -221,6 +221,79 @@ export class World {
             // You can add any initialization logic here
         });
     }
+
+    setupMobileKeypadEvents() {
+        const moveForwardButton = document.getElementById('move-forward');
+        const moveBackwardButton = document.getElementById('move-backward');
+        const moveLeftButton = document.getElementById('move-left');
+        const moveRightButton = document.getElementById('move-right');
+        const jumpButton = document.getElementById('jump-button');
+
+        if (moveForwardButton) {
+            moveForwardButton.addEventListener('touchstart', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.forward = true; 
+                console.log('Keypad Forward: true', this.keys); 
+            });
+            moveForwardButton.addEventListener('touchend', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.forward = false; 
+                console.log('Keypad Forward: false', this.keys); 
+            });
+        }
+        if (moveBackwardButton) {
+            moveBackwardButton.addEventListener('touchstart', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.backward = true; 
+                console.log('Keypad Backward: true', this.keys); 
+            });
+            moveBackwardButton.addEventListener('touchend', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.backward = false; 
+                console.log('Keypad Backward: false', this.keys); 
+            });
+        }
+        if (moveLeftButton) {
+            moveLeftButton.addEventListener('touchstart', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.left = true; 
+                console.log('Keypad Left: true', this.keys); 
+            });
+            moveLeftButton.addEventListener('touchend', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.left = false; 
+                console.log('Keypad Left: false', this.keys); 
+            });
+        }
+        if (moveRightButton) {
+            moveRightButton.addEventListener('touchstart', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.right = true; 
+                console.log('Keypad Right: true', this.keys); 
+            });
+            moveRightButton.addEventListener('touchend', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.keys.right = false; 
+                console.log('Keypad Right: false', this.keys); 
+            });
+        }
+        if (jumpButton) {
+            jumpButton.addEventListener('touchstart', (e) => { 
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                this.player.jump(); 
+                console.log('Keypad Jump'); 
+            });
+        }
+    }
 }
 
 document.addEventListener('touchstart', () => {
