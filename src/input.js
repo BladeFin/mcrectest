@@ -218,23 +218,23 @@ export class InputHandler {
         const jumpButton = document.getElementById('jump-button');
 
         if (moveForwardButton) {
-            moveForwardButton.addEventListener('touchstart', () => { this.keys.forward = true; });
-            moveForwardButton.addEventListener('touchend', () => { this.keys.forward = false; });
+            moveForwardButton.addEventListener('touchstart', () => { this.keys.forward = true; console.log('Keypad Forward: true', this.keys); });
+            moveForwardButton.addEventListener('touchend', () => { this.keys.forward = false; console.log('Keypad Forward: false', this.keys); });
         }
         if (moveBackwardButton) {
-            moveBackwardButton.addEventListener('touchstart', () => { this.keys.backward = true; });
-            moveBackwardButton.addEventListener('touchend', () => { this.keys.backward = false; });
+            moveBackwardButton.addEventListener('touchstart', () => { this.keys.backward = true; console.log('Keypad Backward: true', this.keys); });
+            moveBackwardButton.addEventListener('touchend', () => { this.keys.backward = false; console.log('Keypad Backward: false', this.keys); });
         }
         if (moveLeftButton) {
-            moveLeftButton.addEventListener('touchstart', () => { this.keys.left = true; });
-            moveLeftButton.addEventListener('touchend', () => { this.keys.left = false; });
+            moveLeftButton.addEventListener('touchstart', () => { this.keys.left = true; console.log('Keypad Left: true', this.keys); });
+            moveLeftButton.addEventListener('touchend', () => { this.keys.left = false; console.log('Keypad Left: false', this.keys); });
         }
         if (moveRightButton) {
-            moveRightButton.addEventListener('touchstart', () => { this.keys.right = true; });
-            moveRightButton.addEventListener('touchend', () => { this.keys.right = false; });
+            moveRightButton.addEventListener('touchstart', () => { this.keys.right = true; console.log('Keypad Right: true', this.keys); });
+            moveRightButton.addEventListener('touchend', () => { this.keys.right = false; console.log('Keypad Right: false', this.keys); });
         }
         if (jumpButton) {
-            jumpButton.addEventListener('touchstart', () => { this.player.jump(); });
+            jumpButton.addEventListener('touchstart', () => { this.player.jump(); console.log('Keypad Jump'); });
             // For jump, we only need touchstart to trigger the jump
             // jumpButton.addEventListener('touchend', () => { this.keys.jump = false; }); // Not needed for jump action
         }
@@ -353,5 +353,10 @@ export class InputHandler {
         }
         
         this.player.move(direction, this.keys.sprint);
+
+        // Debug: Log keys state if any movement key is active
+        if (this.keys.forward || this.keys.backward || this.keys.left || this.keys.right || this.keys.jump || this.keys.sprint) {
+             console.log('InputHandler Update Keys State:', this.keys);
+        }
     }
 } 
