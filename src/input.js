@@ -127,11 +127,22 @@ export class InputHandler {
     setupTouchEvents() {
         let touchStartX = null;
         let touchStartY = null;
+        let touchStartTime = null; // To detect taps
+        let initialTouches = 0; // To count fingers on touchstart
+        const tapThresholdTime = 300; // ms
+        const tapThresholdDistance = 10; // pixels
 
         this.domElement.addEventListener('touchstart', (e) => {
+            initialTouches = e.touches.length;
             if (e.touches.length === 1) {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
+                touchStartTime = performance.now();
+            } else {
+                 // Reset if more than one touch starts for drag
+                touchStartX = null;
+                touchStartY = null;
+                touchStartTime = null;
             }
         });
 
@@ -140,19 +151,18 @@ export class InputHandler {
                 const touchCurrentX = e.touches[0].clientX;
                 const touchCurrentY = e.touches[0].clientY;
 
-                const deltaX = touchCurrentX - touchStartX;
-                const deltaY = touchCurrentY - touchStartY;
+                // Reverse delta values for inverted controls
+                const deltaX = touchStartX - touchCurrentX;
+                const deltaY = touchStartY - touchCurrentY;
 
                 // Apply rotation to player's camera based on delta
-                // We need to scale the touch movement to feel natural for camera rotation
                 const rotationSpeed = 0.002; // Adjust this value for sensitivity
 
                 // Rotate horizontally (yaw)
-                // Use the camera directly for rotation
-                this.player.camera.rotation.y -= deltaX * rotationSpeed;
+                this.player.camera.rotation.y += deltaX * rotationSpeed; // Use += for reversed horizontal
 
                 // Rotate vertically (pitch), clamping to prevent flipping
-                this.player.camera.rotation.x -= deltaY * rotationSpeed;
+                this.player.camera.rotation.x += deltaY * rotationSpeed; // Use += for reversed vertical
                 this.player.camera.rotation.x = Math.max(
                     -Math.PI / 2,
                     Math.min(Math.PI / 2,
@@ -161,12 +171,40 @@ export class InputHandler {
 
                 touchStartX = touchCurrentX;
                 touchStartY = touchCurrentY;
+
+                // Prevent tap from being registered if there's significant movement
+                if (Math.abs(deltaX) > tapThresholdDistance || Math.abs(deltaY) > tapThresholdDistance) {
+                     touchStartTime = null; // Invalidate tap detection
+                }
+            } else {
+                 // Reset drag tracking if the number of touches changes
+                touchStartX = null;
+                touchStartY = null;
             }
         });
 
         this.domElement.addEventListener('touchend', (e) => {
+            // Check for tap gesture only if a touch started and didn't move much
+            if (touchStartTime !== null && performance.now() - touchStartTime < tapThresholdTime) {
+                 // Check if all fingers lifted and how many were initially used
+                if (e.touches.length === 0) {
+                    if (initialTouches === 1) {
+                        // One-finger tap to break block
+                        console.log('One-finger tap detected - attempting to break block'); // Debug
+                        this.handleBlockInteraction();
+                    } else if (initialTouches === 2) {
+                        // Two-finger tap to place block
+                         console.log('Two-finger tap detected - attempting to place block'); // Debug
+                        this.handleBlockPlacement();
+                    }
+                }
+            }
+
+            // Reset touch state
             touchStartX = null;
             touchStartY = null;
+            touchStartTime = null;
+            initialTouches = 0;
         });
     }
 
