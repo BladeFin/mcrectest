@@ -214,7 +214,8 @@ export class World {
         document.body.appendChild(startScreen);
 
         // Add touch event listener to start the game
-        startScreen.addEventListener('touchstart', () => {
+        startScreen.addEventListener('touchstart', (event) => {
+            event.preventDefault(); // Prevent default behavior
             startScreen.style.display = 'none'; // Hide the start screen
             console.log('Game started on touch');
             // You can add any initialization logic here
