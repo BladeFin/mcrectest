@@ -120,9 +120,9 @@ class Game {
         const keypadHTML = `
             <div id="mobile-keypad" style="position: fixed; bottom: 20px; left: 20px; z-index: 100;">
                 <div style="display: grid; grid-template-columns: repeat(3, 50px); gap: 10px;">
-                    <div></div><button id="move-forward" style="width: 50px; height: 50px;">▲</button><div></div>
-                    <button id="move-left" style="width: 50px; height: 50px;">◀</button><button id="move-backward" style="width: 50px; height: 50px;">▼</button><button id="move-right" style="width: 50px; height: 50px;">▶</button>
-                    <div></div><button id="jump-button" style="width: 50px; height: 50px;">Jump</button><div></div>
+                    <div></div><button id="move-forward" style="width: 50px; height: 50px; -webkit-tap-highlight-color: transparent; user-select: none;">▲</button><div></div>
+                    <button id="move-left" style="width: 50px; height: 50px; -webkit-tap-highlight-color: transparent; user-select: none;">◀</button><button id="move-backward" style="width: 50px; height: 50px; -webkit-tap-highlight-color: transparent; user-select: none;">▼</button><button id="move-right" style="width: 50px; height: 50px; -webkit-tap-highlight-color: transparent; user-select: none;">▶</button>
+                    <div></div><button id="jump-button" style="width: 50px; height: 50px; -webkit-tap-highlight-color: transparent; user-select: none;">Jump</button><div></div>
                 </div>
             </div>
         `;
